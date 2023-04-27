@@ -10,7 +10,9 @@ type Todos = {
 function App() {
   const [todosItems, setTodosItems] = useState<Todos[]>([]);
   const [postTodoItem, setPostToItem] = useState("");
-
+  const [selectedTodoItemId, setSelectedTodoItemId] = useState<null | number>(
+    null
+  );
   useEffect(() => {
     async function getItems() {
       const response = await axios.get("http://localhost:5117/api/todoitems");
@@ -46,19 +48,74 @@ function App() {
           type="text"
           onChange={(e) => setPostToItem(e.target.value)}
           required
+          placeholder="Enter todo"
         />
         <button type="submit">Add todo</button>
       </form>
       {todosItems
         .sort((a, b) => b.id - a.id)
         .map((todo) => {
+          const isSelected = selectedTodoItemId === todo.id;
           return (
             <div
               key={todo.id}
-              style={{ display: "flex", alignItems: "center", gap: "20px" }}
+              style={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                gap: "20px",
+              }}
             >
-              <p>{todo.name}</p>
-              <button onClick={() => deleteTodoItem(todo.id)}>X</button>
+              <p
+                style={{
+                  width: "50px",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {todo.name}
+              </p>
+              <button
+                onClick={() =>
+                  setSelectedTodoItemId(isSelected ? null : todo.id)
+                }
+                style={{ border: "none", background: "none", color: "#3b82f6" }}
+              >
+                Show more
+              </button>
+              <button
+                style={{ backgroundColor: "#ef4444", color: "white" }}
+                onClick={() => deleteTodoItem(todo.id)}
+              >
+                X
+              </button>
+
+              {isSelected && (
+                <div
+                  style={{
+                    position: "absolute",
+                    backgroundColor: "#bae6fd",
+                    width: "500px",
+                    height: "300px",
+                    zIndex: 999999999,
+                  }}
+                >
+                  <p>{todo.name}</p>
+                  <button
+                    onClick={() =>
+                      setSelectedTodoItemId(isSelected ? null : todo.id)
+                    }
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: "#3b82f6",
+                    }}
+                  >
+                    Show less
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
